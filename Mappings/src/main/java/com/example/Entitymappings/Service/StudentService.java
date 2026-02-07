@@ -3,6 +3,7 @@ package com.example.Entitymappings.Service;
 
 
 
+import com.example.Entitymappings.Controller.StudentResponse;
 import com.example.Entitymappings.Entity.Passport;
 import com.example.Entitymappings.Entity.Student;
 import com.example.Entitymappings.Repositiory.StudentRepository;
@@ -22,7 +23,7 @@ public class StudentService {
 
 
     @Transactional
-    public Student saveStudentWithPassport(String studentName, String passportNumber) {
+    public StudentResponse saveStudentWithPassport(String studentName, String passportNumber) {
 
         // 1️⃣ Create student
         Student student = new Student();
@@ -96,25 +97,49 @@ public class StudentService {
         //
         //✅ What CascadeType actually does
         //Cascade affects ONLY write operations, not read operations
-//conclusin
+//conclusion
         //cascade tells what are all the entities needs to be stored in db
         //save method is used to save the data in db
-        return studentRepository.save(student);
+        Student savedStudent = studentRepository.save(student);
+
+        // 5️⃣ Map Entity → DTO
+        StudentResponse response = new StudentResponse();
+        response.setId(savedStudent.getId());
+        response.setName(savedStudent.getName());
+
+        if (savedStudent.getPassport() != null) {
+            response.setPassportNumber(savedStudent.getPassport().getPassportNumber());
+        }
+
+        return response;
     }
+
+
 
 
     // GET student by studentId
-    @Transactional
-    public Student getStudent(Long studentId) {
-
+    @Transactional(readOnly = true)
+    public StudentResponse getStudent(Long studentId) {
+        // hibernate will execute this queury
+//        Hibernate internally does something like:
+//
+//        SELECT s.*, p.*
+//                FROM student s
+//        LEFT JOIN passport p ON p.student_id = s.id
+//        WHERE s.id = ?
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        // navigation
-        System.out.println(student);
-        System.out.println(student.getPassport());
+        StudentResponse response = new StudentResponse();
+        response.setId(student.getId());
+        response.setName(student.getName());
 
-        return student;
+        if (student.getPassport() != null) {
+            response.setPassportNumber(student.getPassport().getPassportNumber());
+        }
+
+        return response;
     }
+
 }
 

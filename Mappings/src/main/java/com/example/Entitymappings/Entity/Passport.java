@@ -37,7 +37,7 @@ public class Passport {
     // student_id column present in passport table
     @JoinColumn(name = "student_id")
     //edhu outpu vanthu continuues ha print agita erunthuthu athan potum
-    @JsonManagedReference
+
     private Student student;
 
     public Long getId() {

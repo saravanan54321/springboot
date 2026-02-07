@@ -2,6 +2,7 @@ package com.example.Entitymappings.Service;
 
 // PassportService.java
 
+import com.example.Entitymappings.Controller.PassportResponse;
 import com.example.Entitymappings.DTO.PassportRequest;
 import com.example.Entitymappings.Entity.Passport;
 import com.example.Entitymappings.Entity.Student;
@@ -21,27 +22,52 @@ public class PassportService {
         this.passportRepository = passportRepository;
     }
 // tried  unidirectional -> for bidirection check studenservice
-    public Passport savePassport(PassportRequest request) {
+@Transactional
+public PassportResponse savePassport(PassportRequest request) {
 
-        Student student = new Student();
-        student.setName(request.getStudentName());
+    // Create Student
+    Student student = new Student();
+    student.setName(request.getStudentName());
 
-        Passport passport = new Passport();
-        passport.setPassportNumber(request.getPassportNumber());
-        passport.setStudent(student);
+    // Create Passport
+    Passport passport = new Passport();
+    passport.setPassportNumber(request.getPassportNumber());
 
-        return passportRepository.save(passport);
-    }
+    // Link both sides
+    passport.setStudent(student);
+    student.setPassport(passport);
+
+    // Save (owning side)
+    Passport savedPassport = passportRepository.save(passport);
+
+    // Map Entity → Response DTO
+    PassportResponse response = new PassportResponse();
+    response.setId(savedPassport.getId());
+    response.setPassportNumber(savedPassport.getPassportNumber());
+    response.setStudentId(savedPassport.getStudent().getId());
+    response.setStudentName(savedPassport.getStudent().getName());
+
+    return response;
+}
 // ------------------------i am feching details from passport side-----------------------------------
    // using passport id
-    public Passport getPassport(Long passportId) {
-        Passport p =passportRepository.findById(passportId)
-                .orElseThrow(() -> new RuntimeException("Passport not found"));
+public PassportResponse getPassport(Long passportId) {
+    //select * from passport where passport_id  = ?
+    Passport p = passportRepository.findById(passportId)
+            .orElseThrow(() -> new RuntimeException("Passport not found"));
 
-        System.out.println(p);
-        System.out.println(p.getStudent());
-        return  p;
+    PassportResponse response = new PassportResponse();
+
+    response.setId(p.getId());
+    response.setPassportNumber(p.getPassportNumber());
+
+    if (p.getStudent() != null) {
+        response.setStudentId(p.getStudent().getId());
+        response.setStudentName(p.getStudent().getName());
     }
+
+    return response;
+}
 
     //fetching details using studentid in the passport table
     //findByStudentId-> i have defined this in PassportRepository jpa repository-> go and check
@@ -52,16 +78,31 @@ public class PassportService {
     //findById() works only for the entity’s own primary key, never for foreign keys.
     //We need findByStudentId() because the passport is linked to student via a foreign key;
     // findById() can only search by the passport’s primary key, not by the associated student’s ID.
-    @Transactional
-    public Passport getPassportByStudentId(Long studentId) {
+    @Transactional(readOnly = true)
+    public PassportResponse getPassportByStudentId(Long studentId) {
+      //select * from passport where student_id = ?
 
-        return passportRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new RuntimeException("Passport not found for student id: " + studentId));
+                Passport p = passportRepository.findByStudentId(studentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Passport not found for student id: " + studentId)
+                );
+
+        PassportResponse response = new PassportResponse();
+        response.setId(p.getId());
+        response.setPassportNumber(p.getPassportNumber());
+
+        if (p.getStudent() != null) {
+            response.setStudentId(p.getStudent().getId());
+            response.setStudentName(p.getStudent().getName());
+        }
+
+        return response;
     }
+
 
 //------------------------------------------------------------------------------------------------
 
-    //feching details from Student side-> checks Studentservice
+
 
 
 }

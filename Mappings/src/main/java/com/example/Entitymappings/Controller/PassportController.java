@@ -19,18 +19,18 @@ public class PassportController {
     }
 
     @PostMapping
-    public Passport createPassport(@RequestBody PassportRequest request) {
+    public PassportResponse createPassport(@RequestBody PassportRequest request) {
         return passportService.savePassport(request);
     }
    //http://localhost:8080/passports/1
     @GetMapping("/{id}")
-    public Passport getPassport(@PathVariable Long id) {
+    public PassportResponse getPassport(@PathVariable Long id) {
         return passportService.getPassport(id);
     }
 
     //http://localhost:8080/passports/student/1
     @GetMapping("/student/{studentId}")
-    public Passport getPassportByStudentId(@PathVariable Long studentId) {
+    public PassportResponse getPassportByStudentId(@PathVariable Long studentId) {
         return passportService.getPassportByStudentId(studentId);
     }
 }

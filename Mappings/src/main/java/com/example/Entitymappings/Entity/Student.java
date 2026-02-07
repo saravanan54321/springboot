@@ -43,9 +43,10 @@ public class Student {
     //Fail with SchemaException / multiple FK mapping conflict
     //
     //Or create extra unnecessary table if DB allows it
-    @OneToOne(mappedBy = "student")
-    //edhu outpu vanthu continuues ha print agita erunthuthu athan potum
-    @JsonBackReference
+    @OneToOne(mappedBy = "student"
+            ,cascade = CascadeType.ALL
+            )
+
     private Passport passport;
 
     public Long getId() {

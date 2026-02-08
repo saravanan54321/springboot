@@ -47,6 +47,7 @@ public class StudentService {
         //They are managed only if you are inside a transaction and attached to a persistence context
         //
         //So just calling setPassport / setStudent does NOT write to DB yet
+        // same la passortservice dont dig much for interview
         student.setPassport(passport);// Student side
         passport.setStudent(student);     // Passport owning side
 

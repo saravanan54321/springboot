@@ -25,22 +25,37 @@ public class PassportService {
 @Transactional
 public PassportResponse savePassport(PassportRequest request) {
 
-    // Create Student
+    // 1️⃣ Create Student
     Student student = new Student();
     student.setName(request.getStudentName());
 
-    // Create Passport
+    // 2️⃣ Create Passport
     Passport passport = new Passport();
     passport.setPassportNumber(request.getPassportNumber());
 
-    // Link both sides
+    // 3️⃣ Link only owning side first
     passport.setStudent(student);
+
+    // Check memory before inverse side
+    System.out.println("Before setting inverse side:");
+    System.out.println("student.getPassport() -> " + student.getPassport()); // null ❌
+    System.out.println("passport.getStudent().getName() -> " + passport.getStudent().getName()); // Alice ✅
+
+    // 4️⃣ Now link inverse side
+    // this one is optional for dB only java side it is required
+    // without this i can get the data from both side form db  using this mappining
+    // alone  passport.setStudent(student); this is mandatory for db
     student.setPassport(passport);
 
-    // Save (owning side)
+    // Check memory after inverse side
+    System.out.println("After setting inverse side:");
+    System.out.println("student.getPassport().getPassportNumber() -> " + student.getPassport().getPassportNumber()); // P123 ✅
+    System.out.println("passport.getStudent().getName() -> " + passport.getStudent().getName()); // Alice ✅
+
+    // 5️⃣ Save (owning side)
     Passport savedPassport = passportRepository.save(passport);
 
-    // Map Entity → Response DTO
+    // 6️⃣ Map Entity → Response DTO
     PassportResponse response = new PassportResponse();
     response.setId(savedPassport.getId());
     response.setPassportNumber(savedPassport.getPassportNumber());
@@ -50,6 +65,8 @@ public PassportResponse savePassport(PassportRequest request) {
     return response;
 }
 // ------------------------i am feching details from passport side-----------------------------------
+
+    // for get bidirectional linke is not requried from java side it will fetch data from db and links
    // using passport id
 public PassportResponse getPassport(Long passportId) {
     //select * from passport where passport_id  = ?
